@@ -51,11 +51,10 @@ def build_parser():
 
 
 def validate_args(cmd_args):
-    """ Validates the arguments parsed by the parser generated in the build_parser()
-        function. We must always have a bag file. There are two options for processing
-        it. One is to just get the info (-i) and the other is to convert a topic in it
-        to a csv file. For the second option, both the topic and output file must be
-        specified
+    """ Validates the arguments parsed by the parser generated in the build_parser() function. We
+        must always have a bag file. There are two options for processing it. One is to just get the
+        info (-i) and the other is to convert a topic in it to a csv file. For the second option,
+        both the topic and output file must be specified
     """
     valid = cmd_args.bag is not None
 
@@ -68,8 +67,11 @@ def validate_args(cmd_args):
             print('Invalid bag file')
 
     if valid:
-        valid = (cmd_args.info and (cmd_args.topic is None and cmd_args.out_file is None)) or \
-                (not cmd_args.info and (cmd_args.topic is not None and cmd_args.out_file is not None))
+        valid = (cmd_args.info and
+                    (cmd_args.topic is None and cmd_args.out_file is None)) \
+            or \
+                (not cmd_args.info and
+                    (cmd_args.topic is not None and cmd_args.out_file is not None))
         if not valid:
             print('Must request either bag info, or a topic and output file')
 
@@ -77,20 +79,19 @@ def validate_args(cmd_args):
 
 
 def display_bag_info(bag_name):
-    """  Lists every topic in the bag, and the fields within each topic. Data is sent
-            to the standard output. This assumes that every message for a given topic
-            has the same format in the bag. This can sometimes break. For example, if
-            a topic has an array of geometry_msgs/Vector3 in it, and the first message
-            has an empty array, the components of the Vector3 will not be listed. Output
-            will typically look like the following header message published on the
-            /ns/dummy topic name:
+    """ Lists every topic in the bag, and the fields within each topic. Data is sent to the standard
+        output. This assumes that every message for a given topic has the same format in the bag.
+        This can sometimes break. For example, if a topic has an array of geometry_msgs/Vector3 in
+        it, and the first message has an empty array, the components of the Vector3 will not be
+        listed. Output will typically look like the following header message published on the
+        /ns/dummy topic name:
 
-            /ns/dummy
-                header
-                    seq
-                    stamp
-                        secs
-                        nsecs
+        /ns/dummy
+            header
+                seq
+                stamp
+                    secs
+                    nsecs
     """
 
     """ Get the bag file summary info """
@@ -111,23 +112,25 @@ def display_bag_info(bag_name):
 
     bag.close()
 
+    sys.stdout.write("Found %u topics\n"%len(bag_topics))
+
 
 def print_topic_fields(field_name, msg, depth):
-    """ Recursive helper function for displaying information about a topic in a bag. This
-            descends through the nested fields in a message, an displays the name of each
-            level. The indentation increases depending on the depth of the nesting. As
-            we recursively descend, we propagate the field name.
+    """ Recursive helper function for displaying information about a topic in a bag. This descends
+        through the nested fields in a message, an displays the name of each level. The indentation
+        increases depending on the depth of the nesting. As we recursively descend, we propagate the
+        field name.
+
             There are three cases for processing each field in the bag.
 
-            1. The field could have other things in it, for example a pose's translation
-                may have x, y, z components. Check for this by seeing if the message has
-                slots.
-            2. The field could be a vector of other things. For instance, in the message
-                file we could have an array of vectors, like geometry_msgs/Vector[] name.
-                In this case, everything in the vector has the same format, so just look
-                at the first message to extract the fields within the list.
-            3. The field could be a terminal leaf in the message, for instance the
-                nsecs field in a header message. Just display the name.
+            1.  The field could have other things in it, for example a pose's translation may have
+                x, y, z components. Check for this by seeing if the message has slots.
+            2.  The field could be a vector of other things. For instance, in the message file we
+                could have an array of vectors, like geometry_msgs/Vector[] name. In this case,
+                everything in the vector has the same format, so just look at the first message to
+                extract the fields within the list.
+            3.  The field could be a terminal leaf in the message, for instance the nsecs field in a
+                header message. Just display the name.
     """
     if hasattr(msg, '__slots__'):
         """ This level of the message has more fields within it. Display the current
@@ -153,9 +156,9 @@ def print_topic_fields(field_name, msg, depth):
 
 
 def write_header_line(bag, output_file, topic_name):
-    """ Writes a comma delimited list of the field names to a file.
-        bag is an already opened bag file, output_file is an output file that has already
-        been opened, and topic name identifies the topic to display information about,
+    """ Writes a comma delimited list of the field names to a file. bag is an already opened bag
+        file, output_file is an output file that has already been opened, and topic name identifies
+        the topic to display information about,
 
         The field names are written in alphabetical order.
     """
@@ -178,10 +181,10 @@ def write_header_line(bag, output_file, topic_name):
 
 
 def get_field_names(prefix, msg, existing_names):
-    """ Recursive helper function for writing the header line. Works on the same principle
-            as how the topics' fields are listed. Instead of printing them out to standard
-            output, the parts of the messages are combined with underscores. When a leaf
-            field is encountered, the entire prefix is printed.
+    """ Recursive helper function for writing the header line. Works on the same principle as how
+        the topics' fields are listed. Instead of printing them out to standard output, the parts of
+        the messages are combined with underscores. When a leaf field is encountered, the entire
+        prefix is printed.
     """
     if hasattr(msg, '__slots__'):
         for slot in msg.__slots__:
@@ -211,16 +214,18 @@ def write_to_csv(bag_name, output_name, topic_name):
 def write_topic(bag, output_file, topic_name, column_names):
     """ Iterates over a bag, finding all the messages for a given topic.
 
-        Begins by creating a dictionary the maps each field name to
-        its alphabetical index, because the CSV file columns are
-        alphabetized.
+        Begins by creating a dictionary the maps each field name to its alphabetical index, because
+        the CSV file columns are alphabetized.
     """
     column_mapping = dict(zip(column_names, range(0, len(column_names))))
 
     """ Go through every message for a given topic, extract its data fields,
             and write it to the output file
     """
+    msg_count = 1
     for _, msg, _ in bag.read_messages(topics=topic_name):
+        sys.stdout.write("Writing message %u%s"%(msg_count, "\r"))
+        msg_count += 1
         column_values = {}
         """ Build a dictionary of field names and their values. The field names
                 match the column headers.
@@ -229,21 +234,25 @@ def write_topic(bag, output_file, topic_name, column_names):
         """ write the discovered values out to the file """
         write_topic_line(output_file, column_mapping, column_values)
 
+    sys.stdout.write("Processed %u messages\n"%(msg_count -1))
+
 
 def find_field_value(prefix, msg, existing_values, column_names):
     """ Gets the value for all fields. Places the outputs and their field names in the
-            existing_values dictionary. Works on the principle as listing the fields in the bag
-            info command
+        existing_values dictionary. Works on the principle as listing the fields in the bag info
+        command.
     """
     if hasattr(msg, '__slots__'):
         for slot in msg.__slots__:
-            find_field_value('_'.join([prefix, slot]), getattr(msg, slot), existing_values, column_names)
+            find_field_value('_'.join([prefix, slot]),
+                             getattr(msg, slot), existing_values, column_names)
     elif isinstance(msg, list) and len(msg) > 0 and hasattr(msg[0], '__slots__'):
-        """ When we encounter a field in the message that is a list, we need some special processing.
-                If the field name we have built up so far matches something in our column names, we assume
-                that we have reached a leaf of the message, and the field contains actual values.
-                In that case, join all of the values in the field for a given field into a list. Otherwise,
-                the field is a nested structure of other structures, and we have to keep going
+        """ When we encounter a field in the message that is a list, we need some special
+            processing. If the field name we have built up so far matches something in our column
+            names, we assume that we have reached a leaf of the message, and the field contains
+            actual values. In that case, join all of the values in the field for a given field into
+            a list. Otherwise, the field is a nested structure of other structures, and we have to
+            keep going.
         """
         for slot in msg[0].__slots__:
             new_prefix = '_'.join([prefix, slot])
@@ -261,19 +270,17 @@ def find_field_value(prefix, msg, existing_values, column_names):
 def write_topic_line(output_file, column_mapping, column_values):
     """ Writes the discovered field/value pairs to the output file
 
-        We want to write the columns in alphabetical order. Rather than
-            resorting the columns every time, we use a dictionary to map
-            a field name to an output index.
+        We want to write the columns in alphabetical order. Rather than resorting the columns every
+        time, we use a dictionary to map a field name to an output index.
     """
     columns = len(column_mapping.keys()) * [None]
 
     for key in column_values.keys():
         if isinstance(column_values[key], list):
-            """ Fields that have a list of values, such as ranges in a laser scan,
-                    are problematic for representation in a csv file. Each value
-                    in the field gets separated by an underscore, so that it
-                    fits in a single column. Matlab uses the underscores to split
-                    the values
+            """ Fields that have a list of values, such as ranges in a laser scan, are problematic
+                for representation in a csv file. Each value in the field gets separated by an
+                underscore, so that it fits in a single column. Matlab uses the underscores to split
+                the values
             """
             if len(column_values[key]) > 0:
                 columns[column_mapping[key]] = '_'.join([str(x) for x in column_values[key]])
@@ -297,14 +304,16 @@ def write_topic_line(output_file, column_mapping, column_values):
 
 
 if __name__ == "__main__":
-    """Main entry point for the function. Reads the command line arguments
-            and performs the requested actions"""
+    """ Main entry point for the function. Reads the command line arguments and performs the
+        requested actions
+    """
     # Parse the command line arguments
     argument_parser = build_parser()
     args = argument_parser.parse_args()
     if not validate_args(args):
         sys.exit()
 
+    # Perform the requested actions
     if args.info:
         display_bag_info(args.bag)
     else:
