@@ -178,7 +178,6 @@ def display_stats(bag_name):
 
     bag = rosbag.Bag(bag_name)
 
-    """ For every topic in the bag, display its fields. Only do this once per topic """
     for topic in bag_topics:
         print("Topic: " + topic['topic'])
         print("\tType: " + topic['type'])
