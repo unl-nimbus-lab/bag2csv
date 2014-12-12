@@ -237,6 +237,8 @@ def get_field_names(prefix, msg, existing_names):
     elif isinstance(msg, list) and (len(msg) > 0) and hasattr(msg[0], '__slots__'):
         for slot in msg[0].__slots__:
             get_field_names('_'.join([prefix, slot]), getattr(msg[0], slot), existing_names)
+    elif isinstance(msg, tuple):
+        existing_names.append(prefix)
     else:
         existing_names.append(prefix)
 
@@ -306,14 +308,16 @@ def write_topic_line(output_file, column_mapping, column_values):
     columns = len(column_mapping.keys()) * [None]
 
     for key in column_values.keys():
-        if isinstance(column_values[key], list):
+        if isinstance(column_values[key], (tuple, list)):
             """ Fields that have a list of values, such as ranges in a laser scan, are problematic
                 for representation in a csv file. Each value in the field gets separated by an
                 underscore, so that it fits in a single column. Matlab uses the underscores to split
                 the values
             """
             if len(column_values[key]) > 0:
-                columns[column_mapping[key]] = '_'.join([str(x) for x in column_values[key]])
+                combined_str = [str(x) for x in column_values[key]]
+                combined_str = '_'.join(combined_str)
+                columns[column_mapping[key]] = combined_str
             else:
                 """ This handles the corner case where an empty array of arrays was in the file.
                         For example, when we have an array of geometry_msgs/Vector3 values that is
