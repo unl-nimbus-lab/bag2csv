@@ -34,18 +34,24 @@ def build_parser():
                         required=True,
                         type=str)
     parser.add_argument('-i', '--info',
-                        help='List topics',
+                        help='List topics and fields within topics',
+                        required=False,
+                        action='store_true')
+    parser.add_argument('-s', '--stats',
+                        help='Display how many messages were published on each topic',
                         required=False,
                         action='store_true')
     parser.add_argument('-t', '--topic',
                         help='Topic to write to csv file',
                         required=False,
-                        action='store')
+                        action='store',
+                        type=str)
     parser.add_argument('-o', '--output_file',
                         help='Output file name',
                         required=False,
                         action='store',
-                        dest='out_file')
+                        dest='out_file',
+                        type=str)
 
     return parser
 
@@ -68,12 +74,19 @@ def validate_args(cmd_args):
 
     if valid:
         valid = (cmd_args.info and
-                    (cmd_args.topic is None and cmd_args.out_file is None)) \
+                 (cmd_args.topic is None and cmd_args.out_file is None) and
+                 (not cmd_args.stats)) \
             or \
-                (not cmd_args.info and
-                    (cmd_args.topic is not None and cmd_args.out_file is not None))
+                ((not cmd_args.info) and
+                    (cmd_args.topic is not None and cmd_args.out_file is not None) and
+                 (not cmd_args.stats)) \
+            or \
+                ((not cmd_args.info) and
+                 (cmd_args.topic is None and cmd_args.out_file is None) and
+                 cmd_args.stats)
+
         if not valid:
-            print('Must request either bag info, or a topic and output file')
+            print('Must specify either bag info, a topic and output file, or statistics')
 
     return valid
 
@@ -155,6 +168,39 @@ def print_topic_fields(field_name, msg, depth):
         print(' ' * (depth * 2) + field_name)
 
 
+def display_stats(bag_name):
+    """ Displays how many messages were published on each topic in the bag
+    """
+    """ Get the topics in the bag """
+    bag_info = yaml.load(subprocess.Popen(
+        ['rosbag', 'info', '--yaml', bag_name], stdout=subprocess.PIPE).communicate()[0])
+    bag_topics = bag_info['topics']
+
+    bag = rosbag.Bag(bag_name)
+
+    """ For every topic in the bag, display its fields. Only do this once per topic """
+    for topic in bag_topics:
+        print("Topic: " + topic['topic'])
+        print("\tType: " + topic['type'])
+        print("\tCount: " + str(topic['messages']))
+
+    bag.close()
+
+def write_to_csv(bag_name, output_name, topic_name):
+    """ Entry point for writing all messages published on a topic to a CSV file """
+    bag = rosbag.Bag(bag_name)
+    f = open(output_name, 'w')
+    """ Write the name of the fields as the first line in the header file """
+    column_names = write_header_line(bag, f, topic_name)
+    """ Go through the bag and and write every message for a topic out to the
+            CSV file
+    """
+    write_topic(bag, f, topic_name, column_names)
+    """ Cleanup """
+    f.close()
+    bag.close()
+
+
 def write_header_line(bag, output_file, topic_name):
     """ Writes a comma delimited list of the field names to a file. bag is an already opened bag
         file, output_file is an output file that has already been opened, and topic name identifies
@@ -190,25 +236,10 @@ def get_field_names(prefix, msg, existing_names):
         for slot in msg.__slots__:
             get_field_names('_'.join([prefix, slot]), getattr(msg, slot), existing_names)
     elif isinstance(msg, list) and (len(msg) > 0) and hasattr(msg[0], '__slots__'):
-            for slot in msg[0].__slots__:
-                get_field_names('_'.join([prefix, slot]), getattr(msg[0], slot), existing_names)
+        for slot in msg[0].__slots__:
+            get_field_names('_'.join([prefix, slot]), getattr(msg[0], slot), existing_names)
     else:
         existing_names.append(prefix)
-
-
-def write_to_csv(bag_name, output_name, topic_name):
-    """ Entry point for writing all messages published on a topic to a CSV file """
-    bag = rosbag.Bag(bag_name)
-    f = open(output_name, 'w')
-    """ Write the name of the fields as the first line in the header file """
-    column_names = write_header_line(bag, f, topic_name)
-    """ Go through the bag and and write every message for a topic out to the
-            CSV file
-    """
-    write_topic(bag, f, topic_name, column_names)
-    """ Cleanup """
-    f.close()
-    bag.close()
 
 
 def write_topic(bag, output_file, topic_name, column_names):
@@ -316,6 +347,8 @@ if __name__ == "__main__":
     # Perform the requested actions
     if args.info:
         display_bag_info(args.bag)
+    elif args.stats:
+        display_stats(args.bag)
     else:
         write_to_csv(args.bag, args.out_file, args.topic)
 
