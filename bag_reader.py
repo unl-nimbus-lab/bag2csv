@@ -185,6 +185,7 @@ def display_stats(bag_name):
 
     bag.close()
 
+
 def write_to_csv(bag_name, output_name, topic_name):
     """ Entry point for writing all messages published on a topic to a CSV file """
     bag = rosbag.Bag(bag_name)
@@ -294,7 +295,7 @@ def find_field_value(prefix, msg, existing_values, column_names):
                     values.append(getattr(x, slot))
                 existing_values[new_prefix] = values
             else:
-                find_field_value(prefix, getattr(msg[0], slot), existing_values, column_names)
+                find_field_value(new_prefix, getattr(msg[0], slot), existing_values, column_names)
     else:
         existing_values[prefix] = msg
 
