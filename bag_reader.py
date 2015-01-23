@@ -265,7 +265,7 @@ def write_topic(bag, output_file, topic_name, column_names):
     """
     msg_count = 1
     for _, msg, _ in bag.read_messages(topics=topic_name):
-        sys.stdout.write("Writing message %u%s" % (msg_count, "\r"))
+        sys.stdout.write('\t\tWriting message %u%s' % (msg_count, "\r"))
         msg_count += 1
         column_values = {}
         """ Build a dictionary of field names and their values. The field names
@@ -275,7 +275,7 @@ def write_topic(bag, output_file, topic_name, column_names):
         """ write the discovered values out to the file """
         write_topic_line(output_file, column_mapping, column_values)
 
-    sys.stdout.write("Processed %u messages\n" % (msg_count - 1))
+    sys.stdout.write('\t\tProcessed %u messages\n' % (msg_count - 1))
 
 
 def find_field_value(prefix, msg, existing_values, column_names):
@@ -366,6 +366,7 @@ if __name__ == "__main__":
             display_stats(bag)
         else:
             for topic in args.topic:
+                print('\tProcessing topic: ' + topic)
                 """ Output topic information to a file. If no output file has been specified, build one
                     from the file name and topic
                 """
