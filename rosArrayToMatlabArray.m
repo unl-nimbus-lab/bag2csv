@@ -23,6 +23,11 @@
 
 function [values] = rosArrayToMatlabArray(input, use_parallel)
 
+if(isempty(input))
+	values = [];
+	return;
+end
+
 % Sets the optional parallel toolbox features to default to on
 if(nargin == 1)
 	use_parallel = true;
@@ -31,10 +36,11 @@ end
 % Pre-allocate output variables
 num_samples = size(input, 1);
 values = nan(num_samples, numel(strsplit(input{1}, '_')));
+max_col = size(values, 2);
 
 % Check for availability of parallel computing features
 v = ver;
-if(any(strcmp('Parallel Computing Toolbox', {v.Name})) && (use_parallel == true))
+if((use_parallel == true) && any(strcmp('Parallel Computing Toolbox', {v.Name})))
 	% Go through all the passed in strings, split on the underscores, and convert them to numeric
 	% values
 	parfor sample_idx = 1:num_samples
@@ -42,10 +48,16 @@ if(any(strcmp('Parallel Computing Toolbox', {v.Name})) && (use_parallel == true)
 		values(sample_idx, :) = str2double(samples);
 	end
 else
-	% Same idea as the parallel version
 	for sample_idx = 1:num_samples
 		samples = strsplit(input{sample_idx}, '_');
-		values(sample_idx, :) = str2double(samples);
+		sample_val = str2double(samples);
+		if(numel(sample_val) > max_col)
+			max_col = numel(samples);
+			padarray(values, [0, max_col], nan, 'post');
+		elseif(numel(sample_val) < max_col)
+			sample_val = padarray(sample_val, [0, max_col - numel(sample_val)], nan, 'post');
+		end
+		values(sample_idx, :) = sample_val;
 	end
 end
 
