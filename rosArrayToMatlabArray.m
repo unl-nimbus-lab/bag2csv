@@ -52,8 +52,8 @@ else
 		samples = strsplit(input{sample_idx}, '_');
 		sample_val = str2double(samples);
 		if(numel(sample_val) > max_col)
+			values = padarray(values, [0, numel(samples) - max_col], nan, 'post');
 			max_col = numel(samples);
-			padarray(values, [0, max_col], nan, 'post');
 		elseif(numel(sample_val) < max_col)
 			sample_val = padarray(sample_val, [0, max_col - numel(sample_val)], nan, 'post');
 		end
