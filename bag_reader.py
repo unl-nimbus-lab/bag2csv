@@ -189,7 +189,7 @@ def display_stats(bag_name):
     for topic in bag_topics:
         print("Topic: " + topic['topic'])
         print("\tType: " + topic['type'])
-        print("\tCount: " + str(topic['messages']))
+        print("\tCount: " + str(topic['messages']) + '\n')
 
     bag.close()
 
