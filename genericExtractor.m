@@ -26,7 +26,8 @@ T = readtable(filename);
 for col_idx = 1:size(T, 2)
 	col_name = T.Properties.VariableNames{col_idx};
 	% Convert columns containing all 'True' and 'False' to logical values
-	if(all(eval(strcat('strcmp(T.', col_name, ', ''True'')')) | ...
+	if(iscell(eval(strcat('T.', col_name))) && ...
+		all(eval(strcat('strcmp(T.', col_name, ', ''True'')')) | ...
 		eval(strcat('strcmp(T.', col_name, ', ''False'')'))))
 		eval(strcat('T.', col_name, ' = strcmp(T.', col_name, ', ''True'');'));
 	% Convert columns containing strings representing ROS arrays to Matlab arrays	
