@@ -21,13 +21,17 @@
 
 function [T] = genericExtractor(filename)
 
+% Read all the data in the csv file
 T = readtable(filename);
 
+% Go through the data we read in and handle special cases
 for col_idx = 1:size(T, 2)
 	col_name = T.Properties.VariableNames{col_idx};
+	% Convert columns containing all 'True' and 'False' to logical values
 	if(all(eval(strcat('strcmp(T.', col_name, ', ''True'')')) | ...
 		eval(strcat('strcmp(T.', col_name, ', ''False'')'))))
-		eval(strcat('T.', col_name, ' = convertLogical(T.', col_name, ');'));
+		eval(strcat('T.', col_name, ' = strcmp(T.', col_name, '''True'');'));
+	% Convert columns containing strings representing ROS arrays to Matlab arrays	
 	elseif(iscell(eval(strcat('T.', col_name))) && ...
 		all(cellfun(@ischar, eval(strcat('T.', col_name)))) && ...
 		~all(cellfun(@isempty, regexp(eval(strcat('T.', col_name)), '[^_]+_[^_]+'))))
@@ -35,12 +39,9 @@ for col_idx = 1:size(T, 2)
 	end
 end
 
+% For convenience, messages with a standard header get their time field concatenated together
 if(any(strcmp(T.Properties.VariableNames, 'header_stamp_nsecs')))
 	T.header_times = (T.header_stamp_nsecs / 1e9) + T.header_stamp_secs;
-end
-
-function [values] = convertLogical(input)
-	values = strcmp(input, 'True');
 end
 
 end
