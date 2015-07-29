@@ -24,17 +24,17 @@ T = readtable(filename);
 
 % Go through the data we read in and handle special cases
 for col_idx = 1:size(T, 2)
+	col_data = eval(strcat('T.', T.Properties.VariableNames{col_idx}));
 	col_name = T.Properties.VariableNames{col_idx};
 	% Convert columns containing all 'True' and 'False' to logical values
-	if(iscell(eval(strcat('T.', col_name))) && ...
-		all(eval(strcat('strcmp(T.', col_name, ', ''True'')')) | ...
-		eval(strcat('strcmp(T.', col_name, ', ''False'')'))))
-		eval(strcat('T.', col_name, ' = strcmp(T.', col_name, ', ''True'');'));
+	if(iscell(col_data) && ...
+		all(strcmp(col_data, 'True') | strcmp(col_data, 'False')))
+		eval(strcat('T.', col_name, ' = strcmp(col_data, ''True'');'));
 	% Convert columns containing strings representing ROS arrays to Matlab arrays	
-	elseif(iscell(eval(strcat('T.', col_name))) && ...
-		all(cellfun(@ischar, eval(strcat('T.', col_name)))) && ...
-		~all(cellfun(@isempty, regexp(eval(strcat('T.', col_name)), '[^_]+_[^_]+'))))
-		eval(strcat('T.', col_name, ' = rosArrayToMatlabArray(', 'T.', col_name, ');'));
+	elseif(iscell(col_data) && ...
+		all(cellfun(@ischar, col_data)) && ...
+		~all(cellfun(@isempty, regexp(col_data, '[^_]+_[^_]+'))))
+		eval(strcat('T.', col_name, ' = rosArrayToMatlabArray(col_data);'));
 	end
 end
 
