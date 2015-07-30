@@ -1,1 +1,1 @@
-A Python script first reads messages for a given topic from a ROS bag file, and writes them to a CSV file. Matlab scripts then load the CSV file into a workspace.
+bag2csv.py reads data from ROS bag files. The script can display information on the information contained therein, or convert the published messages to CSV files. genericExtractor.m can read these CSV files into a Matlab workspace.
