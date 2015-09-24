@@ -38,26 +38,48 @@ num_samples = size(input, 1);
 values = nan(num_samples, numel(strsplit(input{1}, '_')));
 max_col = size(values, 2);
 
-% Check for availability of parallel computing features
-v = ver;
-if((use_parallel == true) && any(strcmp('Parallel Computing Toolbox', {v.Name})))
+if(use_parallel == true)
 	% Go through all the passed in strings, split on the underscores, and convert them to numeric
-	% values
+	% values. We first place the results in a cell array, so if the extracted arrays are not
+	% of uniform length, we can merge them into a multidimensional array later.
+	converted_samples = cell(num_samples, 1);
 	parfor sample_idx = 1:num_samples
+		% Use textscan to split CSV fields on the underscore
 		samples = textscan(input{sample_idx}, '%s', 'delimiter', '_');
+		% textscan returns a cell array within a cell. Undo this redirection so we have an nx1
+		% cell array
 		samples = samples{1}';
 		sample_val = nan(size(samples));
 		
+		% Go through the extracted results and convert to floating point numbers
 		for sample_val_idx = 1:numel(sample_val)
 			sample_val(sample_val_idx) = sscanf(samples{sample_val_idx}, '%f');
 		end
-		values(sample_idx, :) = sample_val;
+		converted_samples{sample_idx} = sample_val;
+	end
+	% Get the size of the arrays that we extracted
+	lengths = cellfun('length', converted_samples);
+	max_col = max(lengths);
+	% If all of the fields were the same length, we can convert them into a matrix using
+	% cell2mat() directly. Otherwise, we will go through each extracted array, pad it out to
+	% the maximum length, and place it in a matrix of the maximum size.
+	if(min(lengths) == max_col)
+		values = cell2mat(converted_samples);
+	else
+		values = nan(num_samples, max(lengths));
+		parfor sample_idx = 1:numel(converted_samples)
+			values(sample_idx, :) = padarray(...
+				converted_samples{sample_idx}, ...
+				[0, max_col - numel(converted_samples{sample_idx})], ...
+				nan, ...
+				'post');
+		end
 	end
 else
+	% Same as parallel case, but we dynamically grow and shrink the output array
 	for sample_idx = 1:num_samples
 		samples = textscan(input{sample_idx}, '%s', 'delimiter', '_');
 		samples = samples{1}';
-		
 		sample_val = nan(size(samples));
 		
 		for sample_val_idx = 1:numel(sample_val)

@@ -23,7 +23,7 @@
 function [T] = genericExtractor(filename, use_parallel)
 
 if(nargin == 1)
-	use_parallel = false;
+	use_parallel = true;
 end
 
 % Read all the data in the csv file
