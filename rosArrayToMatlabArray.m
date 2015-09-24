@@ -44,7 +44,8 @@ if((use_parallel == true) && any(strcmp('Parallel Computing Toolbox', {v.Name}))
 	% Go through all the passed in strings, split on the underscores, and convert them to numeric
 	% values
 	parfor sample_idx = 1:num_samples
-		samples = strsplit(input{sample_idx}, '_');
+		samples = textscan(input{sample_idx}, '%s', 'delimiter', '_');
+		samples = samples{1}';
 		sample_val = nan(size(samples));
 		
 		for sample_val_idx = 1:numel(sample_val)
@@ -54,7 +55,8 @@ if((use_parallel == true) && any(strcmp('Parallel Computing Toolbox', {v.Name}))
 	end
 else
 	for sample_idx = 1:num_samples
-		samples = strsplit(input{sample_idx}, '_');
+		samples = textscan(input{sample_idx}, '%s', 'delimiter', '_');
+		samples = samples{1}';
 		
 		sample_val = nan(size(samples));
 		
