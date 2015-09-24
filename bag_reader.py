@@ -319,13 +319,13 @@ def write_topic_line(output_file, column_mapping, column_values):
     for key in column_values.keys():
         if isinstance(column_values[key], (tuple, list)):
             """ Fields that have a list of values, such as ranges in a laser scan, are problematic
-                for representation in a csv file. Each value in the field gets separated by an
-                underscore, so that it fits in a single column. Matlab uses the underscores to split
+                for representation in a csv file. Each value in the field gets separated by 
+                `, so that it fits in a single column. Matlab uses the underscores to split
                 the values
             """
             if len(column_values[key]) > 0:
                 combined_str = [str(x) for x in column_values[key]]
-                combined_str = '_'.join(combined_str)
+                combined_str = '`'.join(combined_str)
                 columns[column_mapping[key]] = combined_str
             else:
                 """ This handles the corner case where an empty array of arrays was in the file.

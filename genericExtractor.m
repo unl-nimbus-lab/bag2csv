@@ -40,7 +40,7 @@ for col_idx = 1:size(T, 2)
 	% Convert columns containing strings representing ROS arrays to Matlab arrays	
 	elseif(iscell(col_data) && ...
 		all(cellfun(@ischar, col_data)) && ...
-		~all(cellfun(@isempty, regexp(col_data, '[^_]+_[^_]+'))))
+		~all(cellfun(@isempty, strfind(col_data, '`'))))
 		eval(strcat('T.', col_name, ' = rosArrayToMatlabArray(col_data, use_parallel);'));
 	end
 end

@@ -35,7 +35,7 @@ end
 
 % Pre-allocate output variables
 num_samples = size(input, 1);
-values = nan(num_samples, numel(strsplit(input{1}, '_')));
+values = nan(num_samples, numel(strsplit(input{1}, '`')));
 max_col = size(values, 2);
 
 if(use_parallel == true)
@@ -45,7 +45,7 @@ if(use_parallel == true)
 	converted_samples = cell(num_samples, 1);
 	parfor sample_idx = 1:num_samples
 		% Use textscan to split CSV fields on the underscore
-		samples = textscan(input{sample_idx}, '%s', 'delimiter', '_');
+		samples = textscan(input{sample_idx}, '%s', 'delimiter', '`');
 		% textscan returns a cell array within a cell. Undo this redirection so we have an nx1
 		% cell array
 		samples = samples{1}';
@@ -78,7 +78,7 @@ if(use_parallel == true)
 else
 	% Same as parallel case, but we dynamically grow and shrink the output array
 	for sample_idx = 1:num_samples
-		samples = textscan(input{sample_idx}, '%s', 'delimiter', '_');
+		samples = textscan(input{sample_idx}, '%s', 'delimiter', '`');
 		samples = samples{1}';
 		sample_val = nan(size(samples));
 		
