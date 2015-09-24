@@ -45,12 +45,23 @@ if((use_parallel == true) && any(strcmp('Parallel Computing Toolbox', {v.Name}))
 	% values
 	parfor sample_idx = 1:num_samples
 		samples = strsplit(input{sample_idx}, '_');
-		values(sample_idx, :) = str2double(samples);
+		sample_val = nan(size(samples));
+		
+		for sample_val_idx = 1:numel(sample_val)
+			sample_val(sample_val_idx) = sscanf(samples{sample_val_idx}, '%f');
+		end
+		values(sample_idx, :) = sample_val;
 	end
 else
 	for sample_idx = 1:num_samples
 		samples = strsplit(input{sample_idx}, '_');
-		sample_val = str2double(samples);
+		
+		sample_val = nan(size(samples));
+		
+		for sample_val_idx = 1:numel(sample_val)
+			sample_val(sample_val_idx) = sscanf(samples{sample_val_idx}, '%f');
+		end
+		
 		if(numel(sample_val) > max_col)
 			values = padarray(values, [0, numel(samples) - max_col], nan, 'post');
 			max_col = numel(samples);
