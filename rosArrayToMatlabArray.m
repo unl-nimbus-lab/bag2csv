@@ -44,12 +44,17 @@ if(use_parallel == true)
 	% of uniform length, we can merge them into a multidimensional array later.
 	converted_samples = cell(num_samples, 1);
 	parfor sample_idx = 1:num_samples
+		samples = {};
 		% Use textscan to split CSV fields on the underscore
-		samples = textscan(input{sample_idx}, '%s', 'delimiter', '`');
-		% textscan returns a cell array within a cell. Undo this redirection so we have an nx1
-		% cell array
-		samples = samples{1}';
-		sample_val = nan(size(samples));
+		if(~isempty(input{sample_idx}))
+			samples = textscan(input{sample_idx}, '%s', 'delimiter', '`');
+			% textscan returns a cell array within a cell. Undo this redirection so we have an nx1
+			% cell array
+			samples = samples{1}';
+			sample_val = nan(size(samples));
+		else
+			sample_val = [];
+		end
 		
 		% Go through the extracted results and convert to floating point numbers
 		for sample_val_idx = 1:numel(sample_val)
@@ -68,11 +73,15 @@ if(use_parallel == true)
 	else
 		values = nan(num_samples, max(lengths));
 		parfor sample_idx = 1:numel(converted_samples)
-			values(sample_idx, :) = padarray(...
-				converted_samples{sample_idx}, ...
-				[0, max_col - numel(converted_samples{sample_idx})], ...
-				nan, ...
-				'post');
+			if(~isempty(converted_samples{sample_idx}))
+				values(sample_idx, :) = padarray(...
+					converted_samples{sample_idx}, ...
+					[0, max_col - numel(converted_samples{sample_idx})], ...
+					nan, ...
+					'post');
+			else
+				values(sample_idx, :) = nan(size(values(sample_idx, :)));
+			end
 		end
 	end
 else
