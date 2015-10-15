@@ -20,6 +20,10 @@
 
 function [T] = genericExtractor(filename, use_parallel)
 
+if(~exist(filename, 'file'))
+	error('File does not exist');
+end
+
 if(nargin == 1)
 	use_parallel = true;
 end
