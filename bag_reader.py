@@ -320,7 +320,7 @@ def write_topic_line(output_file, column_mapping, column_values):
         if isinstance(column_values[key], (tuple, list)):
             """ Fields that have a list of values, such as ranges in a laser scan, are problematic
                 for representation in a csv file. Each value in the field gets separated by 
-                `, so that it fits in a single column. Matlab uses the underscores to split
+                `, so that it fits in a single column. Matlab uses the backtick to split
                 the values
             """
             if len(column_values[key]) > 0:
