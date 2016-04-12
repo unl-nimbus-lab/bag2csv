@@ -29,7 +29,7 @@ if(nargin == 1)
 end
 
 % Read all the data in the csv file
-T = readtable(filename);
+T = readtable(filename, 'FileEncoding', 'US-ASCII');
 
 % Go through the data we read in and handle special cases
 for col_idx = 1:size(T, 2)
@@ -42,7 +42,7 @@ for col_idx = 1:size(T, 2)
 	% Convert columns containing strings representing ROS arrays to Matlab arrays	
 	elseif(iscell(col_data) && ...
 		all(cellfun(@ischar, col_data)) && ...
-		~all(cellfun(@isempty, strfind(col_data, '`'))))
+		~all(cellfun(@isempty, strfind(col_data, '``'))))
 		eval(strcat('T.', col_name, ' = rosArrayToMatlabArray(col_data, use_parallel);'));
 	end
 end

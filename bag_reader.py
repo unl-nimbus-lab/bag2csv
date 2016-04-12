@@ -320,12 +320,12 @@ def write_topic_line(output_file, column_mapping, column_values):
         if isinstance(column_values[key], (tuple, list)):
             """ Fields that have a list of values, such as ranges in a laser scan, are problematic
                 for representation in a csv file. Each value in the field gets separated by 
-                `, so that it fits in a single column. Matlab uses the backtick to split
+                ``, so that it fits in a single column. Matlab uses the backticks to split
                 the values
             """
             if len(column_values[key]) > 0:
                 combined_str = [str(x) for x in column_values[key]]
-                combined_str = '`'.join(combined_str)
+                combined_str = '``'.join(combined_str)
                 columns[column_mapping[key]] = combined_str
             else:
                 """ This handles the corner case where an empty array of arrays was in the file.
@@ -339,11 +339,24 @@ def write_topic_line(output_file, column_mapping, column_values):
                         columns[column_mapping[true_key]] = ''
         else:
             """ Normal case of a one to one mapping between a field and a value """
-            columns[column_mapping[key]] = str(column_values[key])
+            out_str = str(column_values[key])
+            if test_for_numeric(out_str):
+                columns[column_mapping[key]] = str(column_values[key])
+            else:
+                columns[column_mapping[key]] = "\"" + str(column_values[key]) + "\""
 
     """ Use the now alphabetized list of values, and join them in a single line and write it """
     line = ','.join(columns) + '\n'
     output_file.write(line)
+
+
+def test_for_numeric(val):
+    try:
+        float(val)
+    except ValueError:
+        return False
+    else:
+        return True
 
 
 if __name__ == "__main__":

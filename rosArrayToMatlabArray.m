@@ -87,7 +87,7 @@ if(use_parallel == true)
 else
 	% Same as parallel case, but we dynamically grow and shrink the output array
 	for sample_idx = 1:num_samples
-		samples = textscan(input{sample_idx}, '%s', 'delimiter', '`');
+		samples = textscan(input{sample_idx}, '%s', 'delimiter', '``');
 		samples = samples{1}';
 		sample_val = nan(size(samples));
 		
