@@ -58,7 +58,13 @@ if(use_parallel == true)
 		
 		% Go through the extracted results and convert to floating point numbers
 		for sample_val_idx = 1:numel(sample_val)
-			sample_val(sample_val_idx) = sscanf(samples{sample_val_idx}, '%f');
+            new_sample = sscanf(samples{sample_val_idx}, '%f');
+            
+            if(isempty(new_sample))
+                sample_val(sample_val_idx) = nan;
+            else
+                sample_val(sample_val_idx) = new_sample;
+            end
 		end
 		converted_samples{sample_idx} = sample_val;
 	end
