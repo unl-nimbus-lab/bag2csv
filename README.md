@@ -1,1 +1,1 @@
-bag2csv.py reads data from ROS bag files. The script can display information on the information contained therein, or convert the published messages to CSV files. genericExtractor.m can read these CSV files into a Matlab workspace.
+bagReader.m reads data on a requested topic from a ROS bag file on a given topic. This requires ROS to be installed so that the Python helper function can load the ROS utilities for manipulating ROS bag files. 
